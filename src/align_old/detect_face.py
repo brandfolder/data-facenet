@@ -34,8 +34,6 @@ import tensorflow as tf
 import cv2
 import os
 
-tf.compat.v1.disable_resource_variables()
-
 def layer(op):
     """Decorator for composable network layers."""
 
@@ -84,7 +82,7 @@ class Network(object):
         session: The current TensorFlow session
         ignore_missing: If true, serialized weights for missing layers are ignored.
         """
-        data_dict = np.load(data_path, encoding='latin1', allow_pickle=True).item() #pylint: disable=no-member
+        data_dict = np.load(data_path, encoding='latin1').item() #pylint: disable=no-member
 
         for op_name in data_dict:
             with tf.compat.v1.variable_scope(op_name, reuse=True):
@@ -193,9 +191,7 @@ class Network(object):
                     dim *= int(d)
                 feed_in = tf.reshape(inp, [-1, dim])
             else:
-
-                print("input_shape=", input_shape)
-                feed_in, dim = (inp, input_shape[-1])
+                feed_in, dim = (inp, input_shape[-1].value)
             weights = self.make_var('weights', shape=[dim, num_out])
             biases = self.make_var('biases', [num_out])
             op = tf.compat.v1.nn.relu_layer if relu else tf.compat.v1.nn.xw_plus_b
